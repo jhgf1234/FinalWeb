@@ -34,7 +34,6 @@
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            background-color: #ffffff;
         }
     </style>
 </head>
@@ -49,7 +48,6 @@
     <!-- 같은 페이지에 나타날 Giscus 방명록 영역 -->
     <div id="guestbook-section">
         <h2>방명록</h2>
-        <!-- Giscus 위젯이 삽입되는 컨테이너 -->
         <div id="giscus-container"></div>
     </div>
 
@@ -57,7 +55,7 @@
         const toggleBtn = document.getElementById('toggle-guestbook');
         const guestbookSection = document.getElementById('guestbook-section');
         const giscusContainer = document.getElementById('giscus-container');
-        let isGiscusLoaded = false; // 중복 로딩 방지 플래그
+        let isGiscusLoaded = false; // 중복 로딩 방지
 
         toggleBtn.addEventListener('click', function(e) {
             e.preventDefault(); // 기본 링크 이동 방지
@@ -78,18 +76,16 @@
         function loadGiscus() {
             const script = document.createElement('script');
             script.src = 'https://giscus.app/client.js';
-            
-            // ▼ 아래 값들을 본인의 giscus.app 설정 페이지에서 발급받은 값으로 교체하세요!
             script.setAttribute('data-repo', 'jhgf1234/FinalWeb');
-            script.setAttribute('data-repo-id', '[여기에_REPO_ID_입력]');
-            script.setAttribute('data-category', 'General'); // 설정한 카테고리명
-            script.setAttribute('data-category-id', '[여기에_CATEGORY_ID_입력]');
+            script.setAttribute('data-repo-id', 'R_kgDOVvx63g');
+            script.setAttribute('data-category', 'General');
+            script.setAttribute('data-category-id', 'DIC_kwDOVvx63s4DLOYP');
             script.setAttribute('data-mapping', 'pathname');
             script.setAttribute('data-strict', '0');
             script.setAttribute('data-reactions-enabled', '1');
             script.setAttribute('data-emit-metadata', '0');
             script.setAttribute('data-input-position', 'bottom');
-            script.setAttribute('data-theme', 'light');
+            script.setAttribute('data-theme', 'preferred_color_scheme');
             script.setAttribute('data-lang', 'ko');
             script.setAttribute('crossorigin', 'anonymous');
             script.async = true;
