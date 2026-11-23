@@ -213,7 +213,7 @@ footer li{margin-bottom:6px}footer a:hover{color:#fff;text-decoration:underline}
       <a href="#review">리뷰</a>
       <a href="#cs">고객센터</a>
       <a href="guestbook.html">방명록</a>
-      <a href="#mypage">마이페이지</a>
+      <a href="mypage.html">마이페이지</a>
     </nav>
     <form class="search" onsubmit="event.preventDefault();alert('검색: '+this.q.value)">
       <input name="q" placeholder="책·문구 검색">
@@ -356,7 +356,7 @@ footer li{margin-bottom:6px}footer a:hover{color:#fff;text-decoration:underline}
       <div><div class="f-logo">다시책방</div>다시 읽고, 다시 쓰다.<br>직접 검수한 중고 도서·문구 소규모 마켓</div>
       <div><h6>샵</h6><ul><li><a href="#">도서</a></li><li><a href="#">문구</a></li><li><a href="#">빈티지·절판</a></li></ul></div>
       <div><h6>고객센터</h6><ul><li><a href="#">공지사항</a></li><li><a href="#">FAQ</a></li><li><a href="#">1:1 문의</a></li></ul></div>
-      <div><h6>내 정보</h6><ul><li><a href="login.html">로그인</a></li><li><a href="join.html">회원가입</a></li><li><a href="guestbook.html">방명록</a></li></ul></div>
+      <div><h6>내 정보</h6><ul><li><a href="login.html">로그인</a></li><li><a href="join.html">회원가입</a></li><li><a href="mypage.html">마이페이지</a></li><li><a href="cart.html">장바구니</a></li><li><a href="guestbook.html">방명록</a></li></ul></div>
     </div>
     <div class="biz">
       상호 다시책방 · 대표 전준희 · 사업자등록번호 000-00-00000 · 통신판매업신고 제0000-대전-0000호<br>
@@ -368,6 +368,7 @@ footer li{margin-bottom:6px}footer a:hover{color:#fff;text-decoration:underline}
 </footer>
 <button class="top-btn" onclick="scrollTo({top:0})" aria-label="맨 위로">↑</button>
 
+<script src="site.js"></script>
 <script>
 /* 슬라이드 */
 const slides=document.getElementById('slides'),dots=document.getElementById('dots'),N=3;let i=0,t;
@@ -375,35 +376,24 @@ for(let k=0;k<N;k++){const b=document.createElement('button');b.onclick=()=>{i=k
 function show(){slides.style.transform=`translateX(-${i*100}%)`;[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));clearInterval(t);t=setInterval(()=>go(1),5500)}
 function go(d){i=(i+d+N)%N;show()}show();
 
-/* 상품 데이터 (표지는 CSS로 만든 예시) */
-const P=[
- ['밤의 도서관','소설','#2f5d50',7800,13800,'A'],
- ['천천히 걷는 법','에세이','#b5432c',6500,14000,'A'],
- ['작은 문장 수업','인문','#6b4a2f',8200,16000,'B'],
- ['기초 통계학','학습','#3b3550',9000,28000,'B'],
- ['빈티지 노트 3권','문구','#c9972b',5500,9000,'S'],
- ['만년필 세트','문구','#1f3a4d',18000,39000,'A'],
- ['절판 시집 모음','절판','#8a3a26',15000,0,'A'],
- ['낡은 일기장','빈티지','#5a6b3a',11000,0,'B']
-];
+/* 상품 데이터: site.js(DASI.PRODUCTS)와 공유 — 장바구니/마이페이지와 같은 데이터 */
+const P=DASI.PRODUCTS.map(p=>[p.name,p.cat,p.color,p.price,p.old,p.grade,p.id]);
 const won=n=>n.toLocaleString()+'원';
 function card(p,idx,rank){
-  const[n,c,col,pr,old,g]=p;
+  const[n,c,col,pr,old,g,id]=p;
   return `<div class="card">${rank?`<div class="rank">${rank}</div>`:''}
   <div class="thumb" style="background:${col}22">
     <div class="cover" style="background:${col}">${n}<small>${c} · 다시책방</small></div>
     <span class="stat">${g}등급</span>
     ${old?`<span class="badge">${Math.round((1-pr/old)*100)}%</span>`:''}
-    <button class="heart" onclick="this.classList.toggle('on')">♥</button>
+    <button class="heart ${DASI.wish.has(id)?'on':''}" onclick="DASI.wish.toggle('${id}',this)" aria-label="찜하기">♥</button>
   </div>
   <div class="info"><span class="cat-n">${c}</span><h5>${n}</h5>
     <div class="price"><b>${won(pr)}</b>${old?`<s>${won(old)}</s>`:''}</div>
-    <button class="add" onclick="addCart()">장바구니 담기</button></div></div>`}
+    <button class="add" onclick="DASI.cart.add('${id}')">장바구니 담기</button></div></div>`}
 document.getElementById('newGrid').innerHTML=P.slice(0,4).map(p=>card(p)).join('');
 document.getElementById('bestGrid').innerHTML=[P[1],P[5],P[0],P[4]].map((p,k)=>card(p,0,k+1)).join('');
 
-/* 장바구니 */
-let cart=0;function addCart(){document.getElementById('cartN').textContent=++cart}
 </script>
 </body>
 </html>
