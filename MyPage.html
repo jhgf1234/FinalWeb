@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마이페이지 | 다시책방</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<div class="topbar">📦 운영자가 직접 검수한 상품만 판매합니다 · <b>3만원 이상 무료배송</b> · 신규 가입 시 1,000원 쿠폰</div>
+
+<!-- 헤더 / 네비게이션 -->
+<header>
+  <div class="wrap head-row">
+    <a href="index.html" class="logo"><span class="logo-mark">다</span><span>다시책방<small>USED BOOKS &amp; STATIONERY</small></span></a>
+    <nav class="main">
+      <a href="index.html#intro">소개</a>
+      <a href="index.html#shop">샵</a>
+      <a href="index.html#review">리뷰</a>
+      <a href="index.html#cs">고객센터</a>
+      <a href="guestbook.html">방명록</a>
+      <a href="mypage.html">마이페이지</a>
+    </nav>
+    <form class="search" onsubmit="event.preventDefault();alert('검색: '+this.q.value)">
+      <input name="q" placeholder="책·문구 검색">
+      <button>🔍</button>
+    </form>
+    <div class="user-nav">
+      <a href="login.html" class="btn-login">로그인</a>
+      <a href="join.html" class="btn-join">회원가입</a>
+      <a href="cart.html" class="cart" aria-label="장바구니" style="border:0">🛒<i id="cartN">0</i></a>
+    </div>
+  </div>
+</header>
+
+
+<main class="wrap">
+  <div class="page-hero gold">
+    <span class="tag" style="border-color:rgba(43,33,24,.5)">MY PAGE</span>
+    <h2>마이페이지</h2>
+    <p style="opacity:.8">내 정보, 주문 내역, 찜한 상품, 내가 쓴 리뷰를 한곳에서 확인하세요.</p>
+  </div>
+
+  <div class="my-grid">
+    <aside class="side" id="side"></aside>
+    <div>
+      <section class="panel" id="p-info"></section>
+      <section class="panel" id="p-orders" hidden></section>
+      <section class="panel" id="p-wish" hidden></section>
+      <section class="panel" id="p-reviews" hidden></section>
+      <section class="panel" id="p-edit" hidden></section>
+    </div>
+  </div>
+</main>
+<!-- 푸터 -->
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div><div class="f-logo">다시책방</div>다시 읽고, 다시 쓰다.<br>직접 검수한 중고 도서·문구 소규모 마켓</div>
+      <div><h6>샵</h6><ul><li><a href="#">도서</a></li><li><a href="#">문구</a></li><li><a href="#">빈티지·절판</a></li></ul></div>
+      <div><h6>고객센터</h6><ul><li><a href="#">공지사항</a></li><li><a href="#">FAQ</a></li><li><a href="#">1:1 문의</a></li></ul></div>
+      <div><h6>내 정보</h6><ul><li><a href="login.html">로그인</a></li><li><a href="join.html">회원가입</a></li><li><a href="mypage.html">마이페이지</a></li><li><a href="cart.html">장바구니</a></li><li><a href="guestbook.html">방명록</a></li></ul></div>
+    </div>
+    <div class="biz">
+      상호 다시책방 · 대표 전준희 · 사업자등록번호 000-00-00000 · 통신판매업신고 제0000-대전-0000호<br>
+      주소 대전광역시 ○○구 ○○로 00 · 이메일 hello@dasichaek.kr<br>
+      <a href="#">이용약관</a> · <a href="#">개인정보처리방침</a><br>
+      © 2026 DASI CHAEKBANG. All rights reserved.
+    </div>
+  </div>
+</footer>
+<button class="top-btn" onclick="scrollTo({top:0})" aria-label="맨 위로">↑</button>
+
+
+
+<!-- 리뷰 작성 -->
+<div class="modal-bg" id="rvModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-label="리뷰 작성">
+    <button class="x" id="rvClose" aria-label="닫기">×</button>
+    <h4>리뷰 작성</h4>
+    <p id="rvTitle" style="font-weight:700;margin-bottom:10px"></p>
+    <div class="stars-in" id="rvStars" aria-label="별점"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+    <div class="fld" style="margin-top:14px"><label for="rvText">후기</label><textarea id="rvText" maxlength="300" placeholder="상품 상태, 포장, 배송은 어땠나요? (10자 이상)"></textarea></div>
+    <p class="msg" id="m-rv"></p>
+    <button class="btn btn-red block" id="rvSave">등록하기</button>
+  </div>
+</div>
+
+<script src="site.js"></script>
+<script>
+(function () {
+  var u = DASI.requireLogin();
+  if (!u) return;                                        // 로그인 안 했으면 로그인 페이지로 이동
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = DASI.esc, won = DASI.won;
+  var TABS = ['info', 'orders', 'wish', 'reviews', 'edit'];
+  var NAMES = { info: '내 정보', orders: '주문 내역', wish: '찜한 상품', reviews: '내가 쓴 리뷰', edit: '정보 수정' };
+  var fmtDate = function (iso) { var d = new Date(iso); return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0'); };
+  function me() { return DASI.current() || u; }
+
+  /* ---------- 사이드 ---------- */
+  function renderSide(tab) {
+    var m = me();
+    var cnt = { orders: DASI.orders.list(m.id).length, wish: DASI.wish.get().length, reviews: DASI.reviews.list(m.id).length };
+    $('side').innerHTML =
+      '<div class="avatar">' + esc(m.name.trim().charAt(0)) + '</div>' +
+      '<h4>' + esc(m.name) + '님</h4><p class="uid">@' + esc(m.id) + '</p><nav>' +
+      TABS.map(function (t) {
+        return '<a href="#' + t + '" class="' + (t === tab ? 'on' : '') + '">' + NAMES[t] + (cnt[t] ? '<i>' + cnt[t] + '</i>' : '') + '</a>';
+      }).join('') +
+      '<a href="cart.html">장바구니 <i>' + DASI.cart.count() + '</i></a></nav>';
+  }
+
+  /* ---------- 내 정보 ---------- */
+  function renderInfo() {
+    var m = me(), cp = m.coupon && !m.coupon.used;
+    $('p-info').innerHTML =
+      '<h3>내 정보</h3>' +
+      '<div class="stat3">' +
+        '<a href="cart.html"><b>' + DASI.cart.count() + '</b><span>장바구니</span></a>' +
+        '<a href="#wish"><b>' + DASI.wish.get().length + '</b><span>찜한 상품</span></a>' +
+        '<a href="#orders"><b>' + DASI.orders.list(m.id).length + '</b><span>주문 내역</span></a></div>' +
+      '<dl class="kv">' +
+        '<dt>아이디</dt><dd>' + esc(m.id) + '</dd>' +
+        '<dt>이름</dt><dd>' + esc(m.name) + '</dd>' +
+        '<dt>이메일</dt><dd>' + esc(m.email) + '</dd>' +
+        '<dt>휴대폰</dt><dd>' + esc(m.phone) + '</dd>' +
+        '<dt>주소</dt><dd>' + esc(m.address) + (m.addressDetail ? ' ' + esc(m.addressDetail) : '') + '</dd>' +
+        '<dt>가입일</dt><dd>' + fmtDate(m.joinedAt) + '</dd>' +
+        '<dt>소식 수신</dt><dd>' + (m.marketing ? '동의' : '미동의') + '</dd>' +
+        '<dt>쿠폰</dt><dd>' + (m.coupon ? (cp ? '🎟 가입 환영 쿠폰 ' + won(m.coupon.amount) + ' (사용 가능)' : '가입 환영 쿠폰 사용 완료') : '없음') + '</dd>' +
+      '</dl>' +
+      '<p style="margin-top:20px"><a class="btn btn-ghost sm" href="#edit">정보 수정</a> <a class="btn btn-red sm" href="cart.html">장바구니 가기</a></p>';
+  }
+
+  /* ---------- 주문 내역 ---------- */
+  function renderOrders() {
+    var m = me(), list = DASI.orders.list(m.id), rvs = DASI.reviews.list(m.id);
+    var h = '<h3>주문 내역</h3>';
+    if (!list.length) {
+      h += '<div class="empty"><span class="big">📦</span>아직 주문 내역이 없어요.<br><a class="btn btn-red" href="index.html#shop">책 구경하러 가기</a></div>';
+    } else {
+      h += list.map(function (o) {
+        return '<article class="ord"><div class="ord-h"><div><b>주문번호 ' + esc(o.no) + '</b><span class="d">' + fmtDate(o.date) + '</span></div>' +
+          '<span class="pill ' + (o.status === '입금대기' ? 'wait' : '') + '">' + esc(o.status) + '</span></div>' +
+          o.items.map(function (it) {
+            var done = rvs.some(function (r) { return r.orderNo === o.no && r.pid === it.id; });
+            return '<div class="oi">' + DASI.cover(it) + '<div class="t"><small>' + esc(it.cat) + '</small><b>' + esc(it.name) + '</b><br><span>' + won(it.price) + ' × ' + it.qty + '</span></div>' +
+              (o.status === '입금대기' ? '' : '<button class="btn btn-ghost sm" data-rv="' + esc(o.no) + '|' + esc(it.id) + '"' + (done ? ' disabled' : '') + '>' + (done ? '작성 완료' : '리뷰 작성') + '</button>') + '</div>';
+          }).join('') +
+          '<div class="ord-f">결제수단 ' + esc(o.pay) + ' · 배송비 ' + won(o.shipping) + (o.discount ? ' · 쿠폰 -' + won(o.discount) : '') +
+          '<br>받는 분 ' + esc(o.receiver) + ' (' + esc(o.phone) + ') · ' + esc(o.address) +
+          '<br>총 결제금액 <b>' + won(o.total) + '</b></div></article>';
+      }).join('');
+    }
+    $('p-orders').innerHTML = h;
+  }
+
+  /* ---------- 찜 ---------- */
+  function renderWish() {
+    var ids = DASI.wish.get(), h = '<h3>찜한 상품</h3>';
+    if (!ids.length) {
+      h += '<div class="empty"><span class="big">♡</span>찜한 상품이 없어요.<br>메인페이지에서 마음에 드는 책의 하트를 눌러 보세요.<br><a class="btn btn-red" href="index.html#shop">책 구경하러 가기</a></div>';
+    } else {
+      h += '<div class="wgrid">' + ids.map(DASI.product).filter(Boolean).map(function (p) {
+        return '<div class="card"><div class="thumb" style="background:' + esc(p.color) + '22"><div class="cover" style="background:' + esc(p.color) + '">' + esc(p.name) + '<small>' + esc(p.cat) + ' · 다시책방</small></div>' +
+          '<span class="stat">' + p.grade + '등급</span><button class="heart on" data-unwish="' + p.id + '" aria-label="찜 해제">♥</button></div>' +
+          '<div class="info"><span class="cat-n">' + esc(p.cat) + '</span><h5>' + esc(p.name) + '</h5><div class="price"><b>' + won(p.price) + '</b>' + (p.old ? '<s>' + won(p.old) + '</s>' : '') + '</div>' +
+          '<button class="add" data-cart="' + p.id + '">장바구니 담기</button></div></div>';
+      }).join('') + '</div>';
+    }
+    $('p-wish').innerHTML = h;
+  }
+
+  /* ---------- 내가 쓴 리뷰 ---------- */
+  function renderReviews() {
+    var list = DASI.reviews.list(me().id), h = '<h3>내가 쓴 리뷰</h3>';
+    if (!list.length) {
+      h += '<div class="empty"><span class="big">✍️</span>작성한 리뷰가 없어요.<br>주문 내역에서 구매한 상품에 리뷰를 남길 수 있어요.<br><a class="btn btn-ghost" href="#orders">주문 내역 보기</a></div>';
+    } else {
+      h += list.map(function (r) {
+        return '<div class="rv-item"><div class="top"><div><b>' + esc(r.name) + '</b> <span class="stars" style="color:var(--gold)">' + '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating) + '</span></div>' +
+          '<div><small>' + fmtDate(r.date) + '</small> <button class="danger" data-delrv="' + esc(r.rid) + '">삭제</button></div></div><p>' + esc(r.text) + '</p></div>';
+      }).join('');
+    }
+    $('p-reviews').innerHTML = h;
+  }
+
+  /* ---------- 정보 수정 ---------- */
+  function renderEdit() {
+    var m = me();
+    $('p-edit').innerHTML =
+      '<h3>회원 정보 수정</h3>' +
+      '<form id="editForm" novalidate>' +
+        '<div class="fld"><label>아이디</label><input type="text" value="' + esc(m.id) + '" readonly></div>' +
+        '<div class="fld"><label for="e-name">이름</label><input type="text" id="e-name" value="' + esc(m.name) + '" maxlength="20"></div>' +
+        '<div class="fld"><label for="e-email">이메일</label><input type="email" id="e-email" value="' + esc(m.email) + '"></div>' +
+        '<div class="fld"><label for="e-phone">휴대폰</label><input type="tel" id="e-phone" value="' + esc(m.phone) + '" maxlength="13"></div>' +
+        '<div class="fld"><label for="e-addr">주소</label><input type="text" id="e-addr" value="' + esc(m.address) + '"><input type="text" id="e-addr2" value="' + esc(m.addressDetail || '') + '" placeholder="상세 주소" style="margin-top:8px"></div>' +
+        '<label class="ck" style="display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer;margin-bottom:10px"><input type="checkbox" id="e-mk" style="width:17px;height:17px;accent-color:var(--red)"' + (m.marketing ? ' checked' : '') + '> 이벤트·신상품 소식 수신 동의</label>' +
+        '<p class="msg" id="m-edit"></p><button class="btn btn-red">저장하기</button>' +
+      '</form>' +
+      '<div class="sec2"><h4>비밀번호 변경</h4><form id="pwForm" novalidate>' +
+        '<div class="fld"><label for="c-old">현재 비밀번호</label><input type="password" id="c-old" autocomplete="current-password"></div>' +
+        '<div class="fld"><label for="c-new">새 비밀번호</label><input type="password" id="c-new" autocomplete="new-password" placeholder="영문+숫자 포함 8자 이상"></div>' +
+        '<div class="fld"><label for="c-new2">새 비밀번호 확인</label><input type="password" id="c-new2" autocomplete="new-password"></div>' +
+        '<p class="msg" id="m-pw"></p><button class="btn btn-ink">비밀번호 변경</button></form></div>' +
+      '<div class="sec2"><h4>회원 탈퇴</h4><p class="hint">탈퇴하면 회원 정보·장바구니·찜·주문 내역·리뷰가 이 브라우저에서 모두 삭제돼요.</p>' +
+        '<button class="danger" id="leaveBtn">회원 탈퇴하기</button></div>';
+
+    $('e-phone').addEventListener('input', function () { this.value = DASI.fmtPhone(this.value); });
+    $('editForm').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var err = DASI.v.name($('e-name').value) || DASI.v.email($('e-email').value) || DASI.v.phone($('e-phone').value) || DASI.v.addr($('e-addr').value);
+      var m2 = $('m-edit');
+      if (err) { m2.className = 'msg err'; m2.textContent = err; return; }
+      DASI.updateUser(m.id, { name: $('e-name').value.trim(), email: $('e-email').value.trim(), phone: $('e-phone').value, address: $('e-addr').value.trim(), addressDetail: $('e-addr2').value.trim(), marketing: $('e-mk').checked });
+      DASI.renderHeader(); renderAll('edit');
+      DASI.toast('✔ 회원 정보가 저장되었어요.');
+    });
+    $('pwForm').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var m2 = $('m-pw'); m2.className = 'msg err';
+      var err = DASI.v.pw($('c-new').value);
+      if (!$('c-old').value) err = '현재 비밀번호를 입력해 주세요.';
+      else if (!err && $('c-new').value !== $('c-new2').value) err = '새 비밀번호가 일치하지 않아요.';
+      if (err) { m2.textContent = err; return; }
+      DASI.changePassword(m.id, $('c-old').value, $('c-new').value).then(function (r) {
+        if (!r.ok) { m2.textContent = r.msg; return; }
+        $('pwForm').reset(); m2.className = 'msg ok'; m2.textContent = '비밀번호가 변경되었어요.';
+      });
+    });
+    $('leaveBtn').addEventListener('click', function () {
+      var pw = prompt('회원 탈퇴를 진행합니다. 비밀번호를 입력해 주세요.');
+      if (pw == null) return;
+      DASI.verifyPassword(m.id, pw).then(function (ok) {
+        if (!ok) { alert('비밀번호가 일치하지 않아요.'); return; }
+        DASI.removeUser(m.id);
+        alert('탈퇴가 완료되었어요. 그동안 이용해 주셔서 감사합니다.');
+        location.href = 'index.html';
+      });
+    });
+  }
+
+  /* ---------- 탭 전환 ---------- */
+  var cur = 'info';
+  function renderAll(tab) {
+    cur = TABS.indexOf(tab) >= 0 ? tab : 'info';
+    TABS.forEach(function (t) { $('p-' + t).hidden = t !== cur; });
+    renderSide(cur);
+    ({ info: renderInfo, orders: renderOrders, wish: renderWish, reviews: renderReviews, edit: renderEdit })[cur]();
+  }
+  window.addEventListener('hashchange', function () { renderAll(location.hash.slice(1)); window.scrollTo({ top: 0 }); });
+  renderAll(location.hash.slice(1));
+
+  /* ---------- 클릭 처리 (위임) ---------- */
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-unwish]'))) { DASI.wish.toggle(t.dataset.unwish); renderAll(cur); }
+    else if ((t = e.target.closest('[data-cart]'))) { DASI.cart.add(t.dataset.cart); renderSide(cur); }
+    else if ((t = e.target.closest('[data-delrv]'))) { if (confirm('이 리뷰를 삭제할까요?')) { DASI.reviews.remove(me().id, t.dataset.delrv); renderAll(cur); } }
+    else if ((t = e.target.closest('[data-rv]'))) openReview(t.dataset.rv);
+  });
+
+  /* ---------- 리뷰 작성 ---------- */
+  var rvCtx = null, rating = 5;
+  var stars = [].slice.call($('rvStars').children);
+  function paint() { stars.forEach(function (s, i) { s.classList.toggle('on', i < rating); }); }
+  stars.forEach(function (s, i) { s.addEventListener('click', function () { rating = i + 1; paint(); }); });
+  function openReview(key) {
+    var p = key.split('|'), p0 = DASI.product(p[1]);
+    rvCtx = { orderNo: p[0], pid: p[1] }; rating = 5; paint();
+    $('rvTitle').textContent = '「' + (p0 ? p0.name : '') + '」';
+    $('rvText').value = ''; $('m-rv').textContent = ''; $('rvModal').hidden = false; $('rvText').focus();
+  }
+  function closeReview() { $('rvModal').hidden = true; }
+  $('rvClose').addEventListener('click', closeReview);
+  $('rvModal').addEventListener('click', function (e) { if (e.target === this) closeReview(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeReview(); });
+  $('rvSave').addEventListener('click', function () {
+    var txt = $('rvText').value.trim();
+    if (txt.length < 10) { $('m-rv').className = 'msg err'; $('m-rv').textContent = '후기를 10자 이상 작성해 주세요.'; return; }
+    var p = DASI.product(rvCtx.pid);
+    DASI.reviews.add(me().id, { rid: 'r' + Date.now(), orderNo: rvCtx.orderNo, pid: rvCtx.pid, name: p ? p.name : '', rating: rating, text: txt, date: new Date().toISOString() });
+    closeReview(); renderAll(cur); DASI.toast('✔ 리뷰가 등록되었어요.', '내 리뷰 보기', 'mypage.html#reviews');
+  });
+})();
+</script>
+</body>
+</html>
